@@ -15,34 +15,31 @@ To do this, add an ``exec`` command to your i3 config:
 exec --no-startup-id /path/to/notification.py &
 ```
 
-2) Set ``GH_NOTIFICATION_TOKEN`` environment variable to a GitHub API token.
+2) Create a file `~/.github-notifications-token` containing a GitHub API token.
 
 To get a token, visit the [GitHub settings](https://github.com/settings/tokens).
-
-To make sure this variable is set before the notification script is run, add
-it to your ``~/.profile`` file.
 
 You can also set the ``GH_NOTIFICATION_FILE`` that will be used to track whether
 you have notifications, and the ``GH_NOTIFICATION_INTERVAL`` between checking
 for notifications (default: 60 seconds).
 
-3) Make ``i3status`` watch for the GitHub notifications file.
+3) Make ``i3status`` read the github notification count file.
 
-add a ``run_watch`` to your ``~/.i3status.conf`` that watches for the
-notification file (default: ``~/.ghn``):
+Add a ``read_file`` section to your ``~/.i3status.conf`` that reads the contents of
+watches for updates to the notification count file (default: ``~/.ghn``):
 
 ```
 # ~/.i3status.conf
 
-order += "run_watch GH"
+order += "read_file github"
 ...
-run_watch GH {
-        pidfile = "/home/tschuy/.ghn"
+read_file github {
+        path = "/home/<user>/.ghn"
+        format = "  %content "
 }
 ```
 
-Whenever the file exists, ``i3status`` will report ``Yes``, and likewise, when
-the file does not exist, it will report ``No``.
+The `.ghn` file will contain the count of unread github notifications.
 
 4) Reload i3.
 

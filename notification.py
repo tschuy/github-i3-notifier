@@ -1,27 +1,31 @@
-#!/usr/bin/python
+#!/usr/bin/env python
+
 import json
-import urllib2
+import requests
 import os
 import time
 import sys
 
-TOKEN = os.environ.get('GH_NOTIFICATION_TOKEN')
-if not TOKEN:
-    print "Set GH_NOTIFICATION_TOKEN env var to a GitHub API token!"
-    print "Generate a token at https://github.com/settings/tokens"
-    sys.exit(1)
+HOME = os.environ.get("HOME")
 
-FILE = os.environ.get('GH_NOTIFICATION_FILE', '~/.ghn')
-INTERVAL = int(os.environ.get('GH_NOTIFICATION_INTERVAL', 60))
+with open(f"{HOME}/.github-notifications-token", "r") as file:
+    TOKEN = file.read().rstrip()
+
+print(f"'{TOKEN}'")
+
+FILE = os.environ.get("GH_NOTIFICATION_FILE", f"{HOME}/.ghn")
+INTERVAL = int(os.environ.get("GH_NOTIFICATION_INTERVAL", 60))
 
 while True:
-    response = urllib2.urlopen('https://api.github.com/notifications?access_token={}'.format(TOKEN))
-    notifications = json.load(response)
-    if notifications:
-        open(FILE, 'a').close()
-    else:
-        try:
-            os.remove(FILE)
-        except OSError:
-            pass
+    response = requests.get(
+        f"https://api.github.com/notifications",
+        headers={
+            "Authorization": f"token {TOKEN}",
+            "Accept": "application/vnd.github.v3+json",
+        },
+    )
+    notifications = response.json()
+    print(f"notification count: {len(notifications)}")
+    with open(FILE, "w") as f:
+        f.write(f"{len(notifications)}")
     time.sleep(INTERVAL)
