@@ -22,25 +22,28 @@ prev_notification_count = None
 notification = Notify(
     default_notification_title="GitHub Notifications",
     default_application_name="GitHub Notifier",
-    default_notification_icon=f"{pathlib.Path(__file__).parent.resolve()}/github-mark_120.png",
+    default_notification_icon=f"{HOME}/devel/github-i3-notifier/github-mark_120.png",
 )
 
 while True:
-    response = requests.get(
-        f"https://api.github.com/notifications",
-        headers={
-            "Authorization": f"token {TOKEN}",
-            "Accept": "application/vnd.github.v3+json",
-        },
-    )
-    notification_count = len(response.json())
-    with open(FILE, "w") as f:
-        f.write(f"{notification_count}")
+    try:
+        response = requests.get(
+            f"https://api.github.com/notifications",
+            headers={
+                "Authorization": f"token {TOKEN}",
+                "Accept": "application/vnd.github.v3+json",
+            },
+        )
+        notification_count = len(response.json())
+        with open(FILE, "w") as f:
+            f.write(f"{notification_count}")
 
-    if prev_notification_count is None or prev_notification_count < notification_count:
-        notification.message = f"{notification_count} unread notifications."
-        notification.send()
+        if prev_notification_count is None or prev_notification_count < notification_count:
+            notification.message = f"{notification_count} unread notifications."
+            notification.send()
 
-    prev_notification_count = notification_count
+        prev_notification_count = notification_count
+    except Exception as e:
+        print(f"ERROR: {e}")
 
     time.sleep(INTERVAL)
